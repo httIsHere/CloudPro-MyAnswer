@@ -18,7 +18,7 @@ exports.main = async (event, context) => {
   if(pageIndex > totalPage || pageIndex === totalPage) {
     hasMore = false
   }
-  return db.collection(dbName).skip((pageIndex - 1) * pageSize).limit(pageSize).orderBy('_id', 'desc').get().then(res => {
+  return db.collection(dbName).orderBy('_id', 'asc').skip((pageIndex - 1) * pageSize).limit(pageSize).get().then(res => {
     res.hasMore = hasMore
     res.totalPage = totalPage
     return res

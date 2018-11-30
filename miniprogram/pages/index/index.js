@@ -4,65 +4,103 @@ const app = getApp()
 Page({
   data: {
     avatarUrl: './user-unlogin.png',
-    userInfo: {},
-    logged: false,
-    takeSession: false,
-    requestResult: ''
+    pageSize: 1,
+    totalPage: 1,
+    isLoading: false,
+    isAdmin: false, // 关系到添加按钮的显示
   },
 
-  onLoad: function() {
+  onLoad: function () {
     if (!wx.cloud) {
       wx.redirectTo({
         url: '../chooseLib/chooseLib',
       })
       return
     }
+    this.getArticles()
+    //是否为管理员用户
+    this.isAdmin()
+  },
 
-    // 获取用户信息
-    wx.getSetting({
+  //上拉加载
+  onReachBottom() {
+    // 下拉触底，先判断是否有请求正在进行中
+    // 以及检查当前请求页数是不是小于数据总页数，如符合条件，则发送请求
+    if (this.isLoading || this.pageIndex > this.totalPage) return
+    this.getArticles();
+  },
+
+  //获得文章列表
+  getArticles: function () {
+    const _this = this;
+    _this.isLoading = true
+    //query
+    wx.cloud.callFunction({
+      name: 'pagination',
+      data: {
+        dbName: 'articles',
+        pageIndex: _this.pageIndex,
+        pageSize: 8
+      },
       success: res => {
-        if (res.authSetting['scope.userInfo']) {
-          // 已经授权，可以直接调用 getUserInfo 获取头像昵称，不会弹框
-          wx.getUserInfo({
-            success: res => {
-              this.setData({
-                avatarUrl: res.userInfo.avatarUrl,
-                userInfo: res.userInfo
-              })
-            }
-          })
-        }
+        _this.isLoading = false
+        console.log(res.result)
+        _this.setData({
+          queryResult: res.result.data,
+          totalPage: res.result.totalPage,
+          pageIndex: _this.pageIndex + 1
+        })
+      },
+      fail: err => {
+        console.log("==> [ERROR]", err)
       }
     })
   },
 
-  onGetUserInfo: function(e) {
-    if (!this.logged && e.detail.userInfo) {
-      this.setData({
-        logged: true,
-        avatarUrl: e.detail.userInfo.avatarUrl,
-        userInfo: e.detail.userInfo
+  //添加文章页
+  toAddArticle: function () {
+    wx.navigateTo({
+      url: '/pages/addArticle/index',
+    })
+  },
+
+  isAdmin: function () {
+    const _this = this;
+    if (app.globalData.isAdmin != null) {
+      return _this.setData({
+        isAdmin: app.globalData.isAdmin
+      })
+    }
+    if (app.globalData.openId) {
+      _this.isAdminReal(app.globalData.openId)
+    } else {
+      wx.cloud.callFunction({
+        name: 'login',
+        success: res => {
+          console.log(res)
+          var openId = res.result.openId
+          app.globalData.openId = openId
+          _this.isAdminReal(openId)
+        }
       })
     }
   },
-
-  onGetOpenid: function() {
-    // 调用云函数
+  isAdminReal: function (openId) {
+    const _this = this;
+    //请求判断是否为管理员
     wx.cloud.callFunction({
-      name: 'login',
-      data: {},
-      success: res => {
-        console.log('[云函数] [login] user openid: ', res.result.openid)
-        app.globalData.openid = res.result.openid
-        wx.navigateTo({
-          url: '../userConsole/userConsole',
-        })
+      name: 'isAdmin',
+      data: {
+        openId: openId
       },
-      fail: err => {
-        console.error('[云函数] [login] 调用失败', err)
-        wx.navigateTo({
-          url: '../deployFunctions/deployFunctions',
-        })
+      success: data => {
+        if (data.result.data.length) {
+          // 该用户为管理员
+          _this.setData({
+            isAdmin: true
+          });
+          app.globalData.isAdmin = true
+        }
       }
     })
   },
@@ -81,7 +119,7 @@ Page({
         })
 
         const filePath = res.tempFilePaths[0]
-        
+
         // 上传图片
         const cloudPath = 'my-image' + filePath.match(/\.[^.]+?$/)[0]
         wx.cloud.uploadFile({
@@ -93,7 +131,7 @@ Page({
             app.globalData.fileID = res.fileID
             app.globalData.cloudPath = cloudPath
             app.globalData.imagePath = filePath
-            
+
             wx.navigateTo({
               url: '../storageConsole/storageConsole'
             })

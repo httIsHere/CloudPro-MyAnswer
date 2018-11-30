@@ -1,0 +1,31 @@
+/* miniprogram/pages/addArticle/index.wxss */
+.view-addArticle{
+  font-size: 14px;
+}
+.view-addArticle .head{
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.view-addArticle .head .category{
+  width: 50%;
+}
+.submitText{
+    font-size: 14px;
+    color: #999;
+}
+.lightText {
+    color: #feac39;
+}
+.view-addArticle .title{
+  padding: 5px 20px;
+  border-bottom: 1px solid #efefef;
+}
+.view-addArticle textarea{
+    height: 450px;
+    width: 100%;
+    padding: 20px;
+    box-sizing: border-box;
+    font-size: 14px;
+}

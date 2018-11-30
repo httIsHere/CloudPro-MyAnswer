@@ -1,0 +1,9 @@
+<!--miniprogram/pages/addArticle/index.wxml-->
+<view class="view-box view-addArticle">
+  <view class='head'>
+    <input bindinput='watchCate' class='category' placeholder='分类'></input>
+    <text class="submitText {{hasWords?'lightText':''}}" bindtap="submitArticle">发送</text>
+  </view>
+  <input bindinput='watchTitle' class='title' placeholder='请输入文章标题'></input>
+  <textarea bindinput='inputWacth' placeholder="分享你的新消息~" maxlength="-1" />
+</view>

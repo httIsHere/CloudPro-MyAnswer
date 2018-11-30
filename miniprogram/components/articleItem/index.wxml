@@ -1,0 +1,7 @@
+<!--components/articleItem/articleItem.wxml-->
+<view class="component-box component-article--item">
+    <view class="item-title">[{{innerItem.category}}] {{innerItem.title}}</view>
+    <view class="item-content">{{innerItem.content}}</view>
+    <!-- 底部操作栏 -->
+    <view class="item-opBar"></view>
+</view>
